@@ -1,0 +1,72 @@
+/* ------------------------------------------------------------------ */
+/*  Sections below the hero                                           */
+/* ------------------------------------------------------------------ */
+.app-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /* Allow natural height expansion when content exceeds viewport height */
+  min-height: 100vh;
+  height: auto;
+  padding: 120px 6vw 80px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(60% 50% at 80% 0%, rgba(139, 92, 246, 0.18), transparent 70%),
+    linear-gradient(180deg, #05030a 0%, #180b2e 55%, #05030a 100%);
+}
+
+.app-section:nth-of-type(even) {
+  background:
+    radial-gradient(60% 50% at 15% 100%, rgba(168, 85, 247, 0.16), transparent 70%),
+    linear-gradient(180deg, #05030a 0%, #0e0820 55%, #05030a 100%);
+}
+
+/* Hairline divider between sections */
+.app-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 6vw;
+  right: 6vw;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.5), transparent);
+}
+
+.app-section__inner {
+  width: 100%;
+  max-width: 1100px;
+  position: relative; /* Ensures child absolute elements stay bounded */
+  z-index: 2;
+}
+
+.app-section__title {
+  margin: 0 0 24px;
+  /* Scaled up minimum size for mobile legibility */
+  font-size: clamp(2.8rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  background: linear-gradient(180deg, #ffffff 10%, #c9bdff 70%, #9f8cf5 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.app-section__text {
+  max-width: 60ch;
+  margin: 0 0 16px;
+  /* Bumps mobile body text to 1.125rem (~18px) and desktop to 1.35rem (~21.6px) */
+  font-size: clamp(1.125rem, 1.8vw, 1.35rem);
+  line-height: 1.7;
+  color: rgba(235, 225, 255, 0.9); /* Increased contrast for better readability */
+}
+
+@media (max-width: 768px) {
+  .app-section {
+    padding: 90px 6vw 60px;
+    min-height: auto; /* Disables forced full-screen height on small screens */
+  }
+}

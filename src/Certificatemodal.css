@@ -1,0 +1,286 @@
+/* ==================================================================
+   CERTIFICATE MODAL — full-screen viewer (fits every certificate shape)
+   ================================================================== */
+.cm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh; /* real visible height on mobile browsers */
+  background: rgba(5, 0, 8, 0.94);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #fff;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  animation: cmFade 0.35s ease both;
+  overscroll-behavior: contain;
+}
+.cm-overlay *,
+.cm-overlay *::before,
+.cm-overlay *::after {
+  box-sizing: border-box;
+}
+.cm-overlay.is-closing {
+  animation: cmFadeOut 0.26s ease both;
+}
+@keyframes cmFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cmFadeOut { to { opacity: 0; } }
+.cm-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 55% at 50% 50%, rgba(104, 21, 217, 0.26), transparent 70%);
+}
+
+/* ---------- shared buttons ---------- */
+.cm-round,
+.cm-pill,
+.cm-side,
+.cm-zoom {
+  color: #fff;
+  background: rgba(25, 0, 47, 0.75);
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  box-shadow: 0 0 18px rgba(104, 21, 217, 0.4);
+  -webkit-tap-highlight-color: transparent;
+}
+.cm-round,
+.cm-side {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: box-shadow 0.3s, background 0.3s, transform 0.3s;
+}
+.cm-overlay svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cm-round:hover,
+.cm-round:focus-visible,
+.cm-side:hover,
+.cm-side:focus-visible,
+.cm-pill:hover,
+.cm-pill:focus-visible {
+  background: rgba(104, 21, 217, 0.5);
+  box-shadow: 0 0 34px rgba(168, 85, 247, 0.85);
+  outline: none;
+}
+.cm-round:active,
+.cm-side:active {
+  transform: scale(0.93);
+}
+
+/* ---------- top bar ---------- */
+.cm-top {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(14px, env(safe-area-inset-top)) clamp(14px, 3vw, 36px) 8px;
+}
+.cm-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  min-width: 0;
+}
+.cm-title {
+  font-family: "Anton", Impact, "Arial Narrow", sans-serif;
+  font-size: clamp(1.05rem, 2vw, 1.6rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #e9d5ff, #a855f7 60%, #6815d9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  white-space: nowrap;
+}
+.cm-count {
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+}
+.cm-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+.cm-round { width: 44px; height: 44px; }
+.cm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  transition: box-shadow 0.3s, background 0.3s;
+}
+.cm-pill svg { width: 16px; height: 16px; }
+
+/* ---------- stage (the whole certificate is fitted inside) ---------- */
+.cm-stage {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: cmZoom 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.cm-stage.is-zoomed { cursor: grab; }
+.cm-stage.is-zoomed:active { cursor: grabbing; }
+@keyframes cmZoom {
+  from { opacity: 0; transform: scale(0.9) translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+.is-closing .cm-stage {
+  transition: transform 0.26s ease, opacity 0.26s ease;
+  transform: scale(0.94);
+  opacity: 0;
+}
+.cm-img {
+  display: block;
+  grid-area: 1 / 1;
+  flex: none;
+  /* real width/height are set in px by the component to fit exactly */
+  max-width: none;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  box-shadow: 0 0 60px rgba(139, 43, 255, 0.42), 0 28px 70px rgba(0, 0, 0, 0.85);
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  will-change: transform;
+  -webkit-user-drag: none;
+  image-rendering: auto;
+}
+.cm-img.is-ready { opacity: 1; }
+.cm-loader {
+  grid-area: 1 / 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 85, 247, 0.25);
+  border-top-color: #a855f7;
+  animation: cmSpin 0.9s linear infinite;
+}
+@keyframes cmSpin { to { transform: rotate(360deg); } }
+
+/* side arrows (desktop / tablet) */
+.cm-side {
+  position: absolute;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin-top: -26px;
+  z-index: 3;
+}
+.cm-prev { left: clamp(10px, 2vw, 28px); }
+.cm-next { right: clamp(10px, 2vw, 28px); }
+.cm-side:hover { transform: scale(1.08); }
+
+/* ---------- bottom bar ---------- */
+.cm-bar {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 16px 4px;
+}
+.cm-bar-nav { display: none; }
+.cm-zoom {
+  display: inline-flex;
+  align-items: center;
+  height: 46px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.cm-zoom button {
+  height: 100%;
+  min-width: 48px;
+  display: grid;
+  place-items: center;
+  padding: 0 6px;
+  cursor: pointer;
+  color: #fff;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  transition: background 0.25s;
+  -webkit-tap-highlight-color: transparent;
+}
+.cm-zoom button:hover:not(:disabled),
+.cm-zoom button:focus-visible { background: rgba(168, 85, 247, 0.3); outline: none; }
+.cm-zoom button:disabled { opacity: 0.3; cursor: default; }
+.cm-zoom-val {
+  min-width: 64px !important;
+  font-size: 0.74rem !important;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  border-left: 1px solid rgba(168, 85, 247, 0.35) !important;
+  border-right: 1px solid rgba(168, 85, 247, 0.35) !important;
+}
+.cm-tip {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  margin: 0;
+  padding: 4px 16px max(12px, env(safe-area-inset-bottom));
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- mobile / tablet portrait ---------- */
+@media (max-width: 899px) {
+  .cm-side { display: none; } /* arrows move to the bottom bar so nothing overlaps the certificate */
+  .cm-bar-nav { display: grid; }
+  .cm-bar { gap: 10px; }
+}
+@media (max-width: 599px) {
+  .cm-meta { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .cm-pill span { display: none; }
+  .cm-pill { width: 44px; padding: 0; justify-content: center; }
+  .cm-tip { font-size: 0.62rem; }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .cm-tip { display: none; }
+  .cm-top { padding-top: 8px; }
+  .cm-bar { padding-top: 6px; }
+  .cm-round, .cm-pill { height: 38px; }
+  .cm-round { width: 38px; }
+  .cm-zoom { height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm-overlay, .cm-stage, .cm-loader { animation-duration: 0.001s !important; }
+}
